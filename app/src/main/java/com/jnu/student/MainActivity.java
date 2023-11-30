@@ -2,7 +2,6 @@ package com.jnu.student;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -11,25 +10,19 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.res.Configuration;
-import android.content.res.Resources;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.jnu.student.data.DataBank;
 import com.jnu.student.data.ShopItem;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -68,11 +61,18 @@ public class MainActivity extends AppCompatActivity {
         mainRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         //...
 
+        shopItems = new DataBank().LoadShopItems(MainActivity.this);
+
 
         shopItems.add(new ShopItem("软件项目管理案例教程（第4版）", 1.5, R.drawable.book_2));
         shopItems.add(new ShopItem("创新工程实践", 2.5, R.drawable.book_no_name));
         shopItems.add(new ShopItem("信息安全数学基础（第2版）", 3.5, R.drawable.book_1));
 
+        if(0 == shopItems.size()) {
+            shopItems.add(new ShopItem("Name", 1.5, R.drawable.book_no_name));
+        }
+
+        shopItemAdapter = new ShopItemAdapter(shopItems);
 
         mainRecyclerView.setAdapter(shopItemAdapter);
         registerForContextMenu(mainRecyclerView);
@@ -88,6 +88,8 @@ public class MainActivity extends AppCompatActivity {
                         double price= Double.parseDouble(priceText);
                         shopItems.add(new ShopItem(name, price, R.drawable.book_no_name));
                         shopItemAdapter.notifyItemInserted(shopItems.size());
+
+                        new DataBank().SaveShopItems(MainActivity.this, shopItems);
 
                     } else if (result.getResultCode() == Activity.RESULT_CANCELED) {
                         // 处理取消操作
@@ -108,6 +110,8 @@ public class MainActivity extends AppCompatActivity {
                         shopItem.setPrice(price);
                         shopItem.setName(name);
                         shopItemAdapter.notifyItemChanged(position);
+
+                        new DataBank().SaveShopItems(MainActivity.this, shopItems);
 
                     } else if (result.getResultCode() == Activity.RESULT_CANCELED) {
                         // 处理取消操作
@@ -133,6 +137,8 @@ public class MainActivity extends AppCompatActivity {
                     public void onClick(DialogInterface dialog, int which) {
                         shopItems.remove(item.getOrder());
                         shopItemAdapter.notifyItemRemoved(item.getOrder());
+
+                        new DataBank().SaveShopItems(MainActivity.this, shopItems);
                     }
                 });
                 builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
