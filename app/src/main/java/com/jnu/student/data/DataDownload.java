@@ -1,5 +1,4 @@
 package com.jnu.student.data;
-
 import android.util.Log;
 
 import org.json.JSONArray;
